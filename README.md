@@ -2,6 +2,8 @@
 
 Sublime Package to find and chose synonyms for the selected word.
 
+![demo](img/demo.gif)
+
 ## Usage
 
 Select a single word, open the command palette and select "Synonymizer". You will be presented with
