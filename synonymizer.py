@@ -32,6 +32,3 @@ class SynonymizerCommand(sublime_plugin.TextCommand):
       if 'name' not in args:
           return SynonymSelectionInputHandler(self.view)
       return None
-
-
-# TODOs: Threading, context information, error handling, use python-datamuse API?
