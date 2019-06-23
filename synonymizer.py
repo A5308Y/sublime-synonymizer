@@ -1,7 +1,8 @@
 import sublime
 import sublime_plugin
 import json
-import urllib
+from urllib.request import urlopen
+from urllib.error import URLError
 
 class SynonymSelectionInputHandler(sublime_plugin.ListInputHandler):
     def __init__(self, view):
@@ -13,7 +14,11 @@ class SynonymSelectionInputHandler(sublime_plugin.ListInputHandler):
     def list_items(self):
         word_region = self.view.sel()[0]
         word = self.view.substr(word_region)
-        return DataMuseApiCall().run(word)
+        datamuse_result = DataMuseApiCall().run(word)
+        if not datamuse_result:
+          sublime.status_message('API could not find any synonyms for the selected string. Please try something else.')
+        else:
+          return datamuse_result
 
 
 class SynonymizerCommand(sublime_plugin.TextCommand):
@@ -28,9 +33,24 @@ class SynonymizerCommand(sublime_plugin.TextCommand):
 
 class DataMuseApiCall():
   def run(self, word):
-      response = urllib.request.urlopen('https://api.datamuse.com/words?ml=' + word)
-      content = response.read()
-      return list(map(self.item_to_word, json.loads(content.decode('utf-8'))))
+    sublime.status_message('Requesting data from datamuse API')
+    result = self.datamuse_result(word)
+    sublime.status_message('Successfully read from datamuse API')
+
+    return list(map(self.item_to_word, result))
+
+  def datamuse_result(self, word):
+      try:
+        response = urlopen('https://api.datamuse.com/words?ml=' + word)
+      except TypeError as err:
+          return sublime.status_message(str(err))
+      except URLError as err:
+          return sublime.status_message('Error connecting to datamuse API')
+
+      result = json.loads(response.read().decode('utf-8'))
+
+      return(result)
+
 
   def item_to_word(self, synonym):
       return synonym['word']
